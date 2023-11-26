@@ -14,8 +14,9 @@ dist/
 .venv/
 venv/
 fingerprints/
+doc_fingerprints/
 plots/
-images/
+images_/
 downloads/
 eggs/
 .eggs/

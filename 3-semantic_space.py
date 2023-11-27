@@ -70,7 +70,7 @@ for row, col in zip(rows, cols):
 
 # Create a heatmap using seaborn
 sns.heatmap(matrix_data, annot=True, fmt="d", cmap="YlGnBu", cbar=True, xticklabels=True, yticklabels=True)
-plt.scatter(cols, rows, marker='s', color='red', label='Contexts')  # Add red squares for context positions
+# plt.scatter(cols, rows, marker='s', color='red', label='Contexts')  # Add red squares for context positions
 plt.title("Semantic Matrix Mapping - Heatmap")
 plt.xlabel("Column")
 plt.ylabel("Row")

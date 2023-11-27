@@ -25,7 +25,13 @@ def plot_fingerprint_heatmap(phrase, fingerprint_matrix):
     plt.gca().invert_yaxis()  # Invert y-axis to match the matrix representation
     plt.grid(color='w', linestyle='-', linewidth=0.5)  # Add grid lines
     plt.gca().set_facecolor('white')  # Set background color to white
-    plt.savefig(f"{phrase.replace(' ', '_')}_fingerprint_heatmap.png")
+
+    # Add annotations for each cell
+    for i in range(len(fingerprint_matrix)):
+        for j in range(len(fingerprint_matrix[0])):
+            plt.text(j, i, str(fingerprint_matrix[i][j]), ha='center', va='center', color='black')
+
+    plt.savefig(f"./images/phrase_fingerprint_heatmap_{phrase.replace(' ', '_')}.png")
     plt.show()
 
 # Main function

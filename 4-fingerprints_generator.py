@@ -51,7 +51,9 @@ for phrase in phrases:
                 print(f"===========  Phrase Matched, Context ID : {context_id} ==========")
                 row, col = context_coordinates[context_id]
                 print(f"||>>>> Semantic Coordinates: {row}, {col}")
-                fingerprint_matrix[(row+NUM_DIMENSIONS)//2][(col+NUM_DIMENSIONS)//2] += 1
+                # fingerprint_matrix[(row+NUM_DIMENSIONS)//2][(col+NUM_DIMENSIONS)//2] += 1
+                fingerprint_matrix[row][col] += 1
+
     
 
     print(fingerprint_matrix)

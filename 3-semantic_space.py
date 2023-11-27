@@ -33,12 +33,57 @@ for context_id, context_data in term_context_matrix.items():
 pos = nx.spring_layout(G, seed=200, center=(0.0, 0.0), k=NUM_DIMENSIONS / 2, weight='weight')
 
 # Calculate figsize based on the number of dimensions
-figsize = (NUM_DIMENSIONS, NUM_DIMENSIONS)
+figsize = (10, 6)
+
+# Extract edge weights to set edge widths
+edge_weights = [data['weight'] for _, _, data in G.edges(data=True)]
 
 plt.figure(figsize=figsize)
-nx.draw(G, pos, with_labels=True, node_color="skyblue", node_size=1500, font_size=10, font_weight="bold")
+nx.draw(G, pos, with_labels=True, node_color="skyblue", node_size=1500, font_size=10, font_weight="bold",
+        width=edge_weights, edge_cmap=plt.cm.YlGnBu, edge_color=edge_weights, font_color="black", alpha=0.9)
+
+
+# edge_cmap=plt.cm.PuRd
+# edge_cmap=plt.cm.RdYlBu
+# edge_cmap=plt.cm.magma
+
+# Add edge labels (weights)
+# edge_labels = {(edge[0], edge[1]): f'{edge[2]["weight"]:.2f}' for edge in G.edges(data=True)}
+# nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_color='red')
+
 plt.title("Semantic Matrix Mapping")
+# Save the plot
+plt.savefig(f"./images/graph.png")
+ 
 plt.show()
+
+
+
+context_context_matrix = np.zeros((NUM_CONTEXT, NUM_CONTEXT), dtype=int)
+for context_id, context_data in term_context_matrix.items():
+    for neighbor_id, neighbor_data in term_context_matrix.items():
+        if context_id != neighbor_id:
+            weight = sum(c1 * c2 for c1, c2 in zip(context_data, neighbor_data))
+            weight_normalized = weight / 20
+            if weight_normalized > 0.3:
+                context_context_matrix[int(context_id) - 1, int(neighbor_id) - 1] = int(weight)
+
+# Find the indices of non-zero entries in the context-context matrix
+nonzero_indices = np.nonzero(context_context_matrix)
+
+# Create a heatmap using seaborn for the non-zero entries
+plt.figure(figsize=(8, 6))
+sns.heatmap(context_context_matrix, annot=True, fmt="d", cmap="YlGnBu", cbar=True,
+            xticklabels=True, yticklabels=True, mask=(context_context_matrix == 0))
+plt.title("Context-Context Matrix (Non-Zero Entries)")
+plt.xlabel("Context ID")
+plt.ylabel("Context ID")
+# Save the plot
+plt.savefig(f"./images/context_context_heatmap.png")
+ 
+plt.show()
+
+
 
 # Generate a dictionary to store context IDs and their corresponding cell coordinates
 context_coordinates = {}
@@ -67,7 +112,7 @@ for coordinates in context_coordinates.values():
 matrix_data = np.zeros((NUM_DIMENSIONS, NUM_DIMENSIONS), dtype=int)
 for row, col in zip(rows, cols):
     matrix_data[row, col] += 1
-
+plt.figure(figsize=(8, 6))
 # Create a heatmap using seaborn
 sns.heatmap(matrix_data, annot=True, fmt="d", cmap="YlGnBu", cbar=True, xticklabels=True, yticklabels=True)
 # plt.scatter(cols, rows, marker='s', color='red', label='Contexts')  # Add red squares for context positions
@@ -75,4 +120,5 @@ plt.title("Semantic Matrix Mapping - Heatmap")
 plt.xlabel("Column")
 plt.ylabel("Row")
 plt.legend()
+plt.savefig(f"./images/semantic_space_heatmap.png")
 plt.show()

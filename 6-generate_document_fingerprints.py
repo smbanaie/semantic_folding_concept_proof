@@ -67,8 +67,8 @@ def main():
             phrase_name = f"doc_{line_number}_{phrases_in_sentence.replace(' ', '_')}"
             doc_filename = os.path.join(doc_fingerprints_folder, f"{phrase_name}_fingerprint.txt")
             np.savetxt(doc_filename, doc_fingerprint, delimiter='\t', fmt='%d')
-            if line_number == 2 :
-                break
+            # if line_number == 2 :
+            #     break
     print("Document fingerprints have been generated and saved in the 'doc_fingerprints' folder.")
 
 if __name__ == "__main__":

@@ -2,3 +2,4 @@ spacy
 networkx
 matplotlib
 seaborn
+plotly

@@ -25,6 +25,7 @@ for context_id, context_data in term_context_matrix.items():
     for neighbor_id, neighbor_data in term_context_matrix.items():
         if context_id != neighbor_id:
             weight = sum(c1 * c2 for c1, c2 in zip(context_data, neighbor_data))
+            # weight = sum((1 if c1 > 0 else 0 ) * (1 if c2 > 0 else 0 ) for c1, c2 in zip(context_data, neighbor_data))
             weight_normalized = weight / 20
             if weight_normalized > 0.3:
                 G.add_edge(context_id, neighbor_id, weight=weight)
@@ -68,22 +69,23 @@ for context_id, context_data in term_context_matrix.items():
             if weight_normalized > 0.3:
                 context_context_matrix[int(context_id) - 1, int(neighbor_id) - 1] = int(weight)
 
-# Find the indices of non-zero entries in the context-context matrix
-nonzero_indices = np.nonzero(context_context_matrix)
+# Adjusting the matrix for display
+adjusted_matrix = np.flipud(context_context_matrix)
 
-# Create a heatmap using seaborn for the non-zero entries
-plt.figure(figsize=(8, 6))
-sns.heatmap(context_context_matrix, annot=True, fmt="d", cmap="YlGnBu", cbar=True,
-            xticklabels=True, yticklabels=True, mask=(context_context_matrix == 0))
-plt.title("Context-Context Matrix (Non-Zero Entries)")
-plt.xlabel("Context ID")
-plt.ylabel("Context ID")
-# Save the plot
+# Create the heatmap
+plt.figure(figsize=(10, 8))  # You can adjust the figure size as per your preference
+sns.heatmap(adjusted_matrix, annot=True, fmt="d", cmap="YlGnBu",
+            xticklabels=list(range(1, NUM_CONTEXT + 1)), yticklabels=list(range(NUM_CONTEXT, 0, -1)))  
+
+# Adding title and labels if needed
+plt.title('Context-Context Matrix Heatmap')
+plt.xlabel('Context ID')
+plt.ylabel('Neighbor ID')
+
+# # Save the plot
 plt.savefig(f"./images/context_context_heatmap.png")
- 
+# Show the plot
 plt.show()
-
-
 
 # Generate a dictionary to store context IDs and their corresponding cell coordinates
 context_coordinates = {}
@@ -110,11 +112,16 @@ for coordinates in context_coordinates.values():
 
 # Create a NumPy array for the matrix
 matrix_data = np.zeros((NUM_DIMENSIONS, NUM_DIMENSIONS), dtype=int)
+# Adjusting the matrix for display
+adjusted_matrix_data = np.flipud(matrix_data)
+
+
 for row, col in zip(rows, cols):
     matrix_data[row, col] += 1
 plt.figure(figsize=(8, 6))
 # Create a heatmap using seaborn
-sns.heatmap(matrix_data, annot=True, fmt="d", cmap="YlGnBu", cbar=True, xticklabels=True, yticklabels=True)
+sns.heatmap(adjusted_matrix_data, annot=True, fmt="d", cmap="YlGnBu", cbar=True,
+            xticklabels=list(range(1, NUM_DIMENSIONS + 1)), yticklabels=list(range(NUM_DIMENSIONS, 0, -1)))
 # plt.scatter(cols, rows, marker='s', color='red', label='Contexts')  # Add red squares for context positions
 plt.title("Semantic Matrix Mapping - Heatmap")
 plt.xlabel("Column")
@@ -122,3 +129,84 @@ plt.ylabel("Row")
 plt.legend()
 plt.savefig(f"./images/semantic_space_heatmap.png")
 plt.show()
+
+
+import plotly.graph_objs as go
+
+context_text_mapping = {}
+
+with open("corpus.txt", "r", encoding="utf-8") as file:
+    for line in file:
+        # Assuming each line is in the format: "line_number,context_text"
+        line_number, context_text = line.strip().split(',', 1)
+        context_text_mapping[line_number] = line # context_text
+
+# Create an empty array for the line numbers
+line_numbers = [["" for _ in range(NUM_DIMENSIONS)] for _ in range(NUM_DIMENSIONS)]
+# Create an empty array for the heatmap
+context_texts = [["" for _ in range(NUM_DIMENSIONS)] for _ in range(NUM_DIMENSIONS)]
+
+# Populate the array with line numbers and context texts
+for context_id, coordinates in context_coordinates.items():
+    row, col = map(int, coordinates.split(','))
+    current_lines = line_numbers[row][col]
+    new_line = context_id  # Using context_id as the line number
+
+    # Concatenate if there's already a line number in this cell
+    if current_lines:
+        line_numbers[row][col] = current_lines + ", " + new_line
+    else:
+        line_numbers[row][col] = new_line
+
+    # Assign context text to the corresponding cell
+    current_text = context_texts[row][col]
+    new_text = context_text_mapping.get(context_id, "")
+
+    # Concatenate if there's already text in this cell
+    if current_text:
+        context_texts[row][col] = current_text + " || " + new_text
+    else:
+        context_texts[row][col] = new_text
+
+# Adjust the matrices for display
+adjusted_line_numbers = np.flipud(line_numbers)
+
+adjusted_context_texts = np.flipud(context_texts)
+
+# Create a figure for line numbers using Seaborn
+plt.figure(figsize=(8, 6))
+sns.heatmap(np.zeros_like(adjusted_matrix_data), annot=adjusted_line_numbers, fmt="", cmap="YlGnBu", cbar=False,
+            xticklabels=list(range(1, NUM_DIMENSIONS + 1)), yticklabels=list(range(1, NUM_DIMENSIONS + 1)))
+plt.title("Semantic Matrix Mapping - Line Numbers")
+plt.xlabel("Column")
+plt.ylabel("Row")
+plt.savefig(f"./images/semantic_space_heatmap_context_id.png")
+
+plt.show()
+
+
+
+trace = go.Heatmap(
+    z=adjusted_matrix_data, 
+    x=list(range(1, NUM_DIMENSIONS + 1)),
+    y=list(range(NUM_DIMENSIONS, 0, -1)),
+    text=adjusted_line_numbers,  # Display line numbers in each cell
+    hovertext=adjusted_context_texts,  # Show context information on hover
+    hoverinfo="text",
+    colorscale="YlGnBu" 
+)
+
+# Layout configuration
+layout = go.Layout(
+    title="Semantic Matrix Mapping - Heatmap",
+    xaxis=dict(title="Column"),
+    yaxis=dict(title="Row"),
+    hovermode='closest'
+)
+
+print(adjusted_line_numbers)
+# Create figure
+fig = go.Figure(data=[trace], layout=layout)
+
+# Show the figure
+fig.show()

@@ -27,7 +27,7 @@ for context_id, context_data in term_context_matrix.items():
             weight = sum(c1 * c2 for c1, c2 in zip(context_data, neighbor_data))
             # weight = sum((1 if c1 > 0 else 0 ) * (1 if c2 > 0 else 0 ) for c1, c2 in zip(context_data, neighbor_data))
             weight_normalized = weight / 20
-            if weight_normalized > 0.3:
+            if weight_normalized > 0.1:
                 G.add_edge(context_id, neighbor_id, weight=weight)
 
 # Use force-directed layout to position the nodes based on edge weights
@@ -66,7 +66,7 @@ for context_id, context_data in term_context_matrix.items():
         if context_id != neighbor_id:
             weight = sum(c1 * c2 for c1, c2 in zip(context_data, neighbor_data))
             weight_normalized = weight / 20
-            if weight_normalized > 0.3:
+            if weight_normalized > 0.1:
                 context_context_matrix[int(context_id) - 1, int(neighbor_id) - 1] = int(weight)
 
 # Adjusting the matrix for display

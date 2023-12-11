@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy as np
 
 
-NUM_DIMENSIONS = 8  # Number of dimensions (can be changed)
+NUM_DIMENSIONS = 10  # Number of dimensions (can be changed)
 NUM_CONTEXT = 20
 
 # Read the term-context matrix from the CSV file
